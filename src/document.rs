@@ -1,5 +1,6 @@
 use crate::Position;
 use crate::Row;
+use crate::SearchDirection;
 use std::io::Error;
 use std::io::Write;
 use std::{fs, io};
@@ -74,7 +75,7 @@ impl Document {
             return;
         }
         self.dirty = true;
-        if at.x == self.rows.get(at.y).unwrap().len() && at.y + 1 < len  {
+        if at.x == self.rows.get(at.y).unwrap().len() && at.y + 1 < len {
             let next_row = self.rows.remove(at.y + 1);
             let row = self.rows.get_mut(at.y).unwrap();
             row.append(&next_row);
@@ -98,5 +99,41 @@ impl Document {
 
     pub fn is_dirty(&self) -> bool {
         self.dirty
+    }
+
+    pub fn find(&self, query: &str, at: &Position, direction: SearchDirection) -> Option<Position> {
+        if at.y >= self.rows.len() {
+            return None;
+        }
+        let mut position = Position { x: at.x, y: at.y };
+        let start = if direction == SearchDirection::Forward {
+            at.y
+        } else {
+            0
+        };
+        let end = if direction == SearchDirection::Forward {
+            self.rows.len()
+        } else {
+            at.y.saturating_add(1)
+        };
+        for _ in start..end {
+            if let Some(row) = self.rows.get(position.y) {
+                if let Some(x) = row.find(query, position.x, direction) {
+                    position.x = x;
+                    return Some(position);
+                }
+                if direction == SearchDirection::Forward {
+                    position.y = position.y.saturating_add(1);
+                    position.x = 0;
+                } else {
+                    position.y = position.y.saturating_sub(1);
+                    position.x = self.rows[position.y].len();
+                }
+            } else {
+                return None;
+            }
+        }
+
+        None
     }
 }
