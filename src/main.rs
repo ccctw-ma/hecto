@@ -11,12 +11,15 @@ mod document;
 mod editor;
 mod row;
 mod terminal;
+mod highlightling;
+mod filetype;
 pub use document::Document;
 use editor::Editor;
 pub use editor::Position;
 pub use row::Row;
 pub use terminal::Terminal;
 pub use editor::SearchDirection;
+pub use filetype::{FileType, HighlightingOptions};
 fn main() {
     Editor::default().run();
 }
